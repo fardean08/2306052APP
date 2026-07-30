@@ -1,0 +1,17 @@
+name: supervisor_finder_backend
+description: >
+  Backend for the Final Year Project Supervisor Finder app.
+  Pure Dart, dart:io HttpServer, JSON-file-backed data store,
+  layered Controller -> Service -> Repository architecture.
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  crypto: ^3.0.3
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0
