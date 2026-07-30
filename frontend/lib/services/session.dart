@@ -27,6 +27,33 @@ class Session extends ChangeNotifier {
       '/api/login',
       body: {'email': email, 'password': password},
     );
+    _applyAuthResponse(response as Map<String, dynamic>);
+  }
+
+  /// Creates a new account and, on success, logs it straight in — mirrors
+  /// [login]'s effect on this session. [office] is only meaningful when
+  /// [role] is [UserRole.staff].
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+    required UserRole role,
+    String? office,
+  }) async {
+    final response = await apiClient.post(
+      '/api/register',
+      body: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'role': role.name,
+        if (role == UserRole.staff) 'office': office ?? '',
+      },
+    );
+    _applyAuthResponse(response as Map<String, dynamic>);
+  }
+
+  void _applyAuthResponse(Map<String, dynamic> response) {
     _token = response['token'] as String;
     _currentUser = AppUser.fromJson(response['user'] as Map<String, dynamic>);
     apiClient.setToken(_token);
