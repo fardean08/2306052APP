@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../models/user.dart';
 import '../services/app_exceptions.dart';
+import '../services/auth_service.dart';
 
 /// Shared plumbing for the Controller layer: reading/writing JSON over
 /// dart:io's [HttpRequest]/[HttpResponse], extracting the bearer token,
@@ -50,4 +52,19 @@ String? bearerToken(HttpRequest request) {
   if (header == null || !header.startsWith('Bearer ')) return null;
   final token = header.substring('Bearer '.length).trim();
   return token.isEmpty ? null : token;
+}
+
+/// Resolves the request's bearer token to a [User] via [authService], or
+/// throws [AuthException] (401) if there is no valid session. Every
+/// controller endpoint that requires a logged-in caller starts with this.
+Future<User> requireAuthenticatedUser(
+  HttpRequest request,
+  AuthService authService,
+) async {
+  final token = bearerToken(request);
+  final user = await authService.userForToken(token);
+  if (user == null) {
+    throw AuthException('Authentication required');
+  }
+  return user;
 }
