@@ -30,6 +30,9 @@ class Session {
 /// Salted SHA-256 password hashing plus a simple in-memory session-token
 /// store. This is the only place in the app that deals with credentials.
 class AuthService {
+  static const minPasswordLength = 8;
+  static final RegExp _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
   final UserRepository _userRepository;
   final Map<String, Session> _sessionsByToken = {};
   final Random _random = Random.secure();
@@ -37,7 +40,7 @@ class AuthService {
   AuthService(this._userRepository);
 
   /// Generates a fresh random salt, encoded as URL-safe base64. Used when
-  /// creating a user (including seed data).
+  /// creating a user.
   static String generateSalt([int byteLength = 16]) {
     final bytes = List<int>.generate(byteLength, (_) => Random.secure().nextInt(256));
     return base64Url.encode(bytes);
@@ -62,13 +65,49 @@ class AuthService {
     if (candidateHash != user.passwordHash) {
       throw AuthException('Invalid email or password');
     }
-    final token = _generateToken();
-    _sessionsByToken[token] = Session(
-      token: token,
-      userId: user.id,
-      createdAt: DateTime.now(),
+    return (user, _createSession(user));
+  }
+
+  /// Creates a new account and, on success, logs it straight in (mirrors
+  /// [login]'s return shape so the controller/UI treats them the same
+  /// way). Validates the fields that matter for a working account —
+  /// there's no separate "register" use case per the spec, so this is
+  /// plumbing, not a place for elaborate business rules.
+  Future<(User, String)> register({
+    required String name,
+    required String email,
+    required String password,
+    required UserRole role,
+  }) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) {
+      throw ValidationException('Name is required');
+    }
+    final normalizedEmail = email.trim();
+    if (!_emailPattern.hasMatch(normalizedEmail)) {
+      throw ValidationException('Enter a valid email address');
+    }
+    if (password.length < minPasswordLength) {
+      throw ValidationException(
+        'Password must be at least $minPasswordLength characters',
+      );
+    }
+    final existing = await _userRepository.findByEmail(normalizedEmail);
+    if (existing != null) {
+      throw ValidationException('An account with that email already exists');
+    }
+
+    final salt = generateSalt();
+    final user = User(
+      id: _generateUserId(),
+      name: trimmedName,
+      email: normalizedEmail,
+      role: role,
+      salt: salt,
+      passwordHash: hashPassword(password, salt),
     );
-    return (user, token);
+    await _userRepository.insert(user);
+    return (user, _createSession(user));
   }
 
   /// Invalidates [token], if it exists. Idempotent.
