@@ -38,6 +38,10 @@ dependencies:
   # HTTP client used to call the Dart backend's JSON API.
   http: ^1.2.0
 
+  # Opens a project idea's linkUrl in the device's browser (FR6: shown as
+  # a real link, not raw text).
+  url_launcher: ^6.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
