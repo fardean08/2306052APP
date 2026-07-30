@@ -125,8 +125,24 @@ class AuthService {
     return _userRepository.findById(session.userId);
   }
 
+  String _createSession(User user) {
+    final token = _generateToken();
+    _sessionsByToken[token] = Session(
+      token: token,
+      userId: user.id,
+      createdAt: DateTime.now(),
+    );
+    return token;
+  }
+
   String _generateToken() {
     final bytes = List<int>.generate(32, (_) => _random.nextInt(256));
     return base64Url.encode(bytes);
+  }
+
+  String _generateUserId() {
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    final suffix = _random.nextInt(1 << 32);
+    return 'user_${timestamp}_$suffix';
   }
 }
