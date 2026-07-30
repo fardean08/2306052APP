@@ -1,0 +1,10 @@
+# Runtime data (JSON-file-backed store) — regenerated/seeded on first run.
+data/
+
+# Dart/Pub
+# (pubspec.lock is intentionally NOT ignored — this is an application,
+# not a published package, so the lockfile should be committed for
+# reproducible builds.)
+.dart_tool/
+.packages
+build/
