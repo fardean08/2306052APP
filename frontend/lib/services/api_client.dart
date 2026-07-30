@@ -98,11 +98,3 @@ class ApiClient {
 
   void close() => _httpClient.close();
 }
-
-/// Set by Flutter itself at startup; declared here (rather than importing
-/// `package:flutter/foundation.dart`) to keep this file dependency-free
-/// aside from `http`. See main.dart, which is the only place this
-/// constant needs to come from Flutter proper in practice — this local
-/// const is only ever false, since dart:io is unavailable on web anyway
-/// and this app targets mobile.
-const bool kIsWeb = false;
