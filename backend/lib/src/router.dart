@@ -92,6 +92,7 @@ Router buildRouter({
   final router = Router();
 
   router.post('/api/login', (req, params) => authController.login(req));
+  router.post('/api/register', (req, params) => authController.register(req));
   router.post('/api/logout', (req, params) => authController.logout(req));
 
   router.get('/api/search', (req, params) => searchController.search(req));
