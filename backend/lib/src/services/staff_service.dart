@@ -1,14 +1,16 @@
 import '../models/staff_profile.dart';
 import '../models/user.dart';
 import '../repositories/staff_profile_repository.dart';
+import '../repositories/user_repository.dart';
 import 'app_exceptions.dart';
 
 /// Business rules for staff profiles: reading the canonical profile record
 /// (FR4) and changing supervision availability (FR2).
 class StaffService {
   final StaffProfileRepository _profileRepository;
+  final UserRepository _userRepository;
 
-  StaffService(this._profileRepository);
+  StaffService(this._profileRepository, this._userRepository);
 
   Future<List<StaffProfile>> getAllProfiles() => _profileRepository.getAll();
 
@@ -18,6 +20,16 @@ class StaffService {
       throw NotFoundException('No staff profile for user $userId');
     }
     return profile;
+  }
+
+  /// Resolves the account behind a staff profile, e.g. so a profile-detail
+  /// view can show the owner's name alongside their office/status.
+  Future<User> getOwner(String userId) async {
+    final user = await _userRepository.findById(userId);
+    if (user == null) {
+      throw NotFoundException('No user with id $userId');
+    }
+    return user;
   }
 
   /// Creates the one canonical profile for a newly-seeded staff member.
