@@ -38,12 +38,7 @@ Future<void> main(List<String> args) async {
   final tagRepository = TagRepository(store);
   final enquiryRepository = EnquiryRepository(store);
 
-  await seedDatabase(
-    userRepository: userRepository,
-    staffProfileRepository: staffProfileRepository,
-    entryRepository: entryRepository,
-    tagRepository: tagRepository,
-  );
+  await seedDatabase(tagRepository: tagRepository);
 
   final authService = AuthService(userRepository);
   final staffService = StaffService(staffProfileRepository, userRepository);
@@ -64,7 +59,7 @@ Future<void> main(List<String> args) async {
   final tagService = TagService(tagRepository);
 
   final router = buildRouter(
-    authController: AuthController(authService),
+    authController: AuthController(authService, staffService),
     staffController: StaffController(staffService, entryService, authService),
     entryController: EntryController(entryService, authService),
     searchController: SearchController(searchService),
@@ -77,7 +72,7 @@ Future<void> main(List<String> args) async {
   final server = await HttpServer.bind(InternetAddress.anyIPv4, port);
   stdout.writeln('Supervisor Finder backend listening on port $port');
   stdout.writeln('Data file: ${dataFile.absolute.path}');
-  stdout.writeln('Seed login password for all demo accounts: password123');
+  stdout.writeln('No demo accounts — register via POST /api/register.');
 
   await for (final request in server) {
     try {
