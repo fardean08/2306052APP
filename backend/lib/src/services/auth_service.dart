@@ -5,16 +5,14 @@ import 'package:crypto/crypto.dart';
 
 import '../models/user.dart';
 import '../repositories/user_repository.dart';
+import 'app_exceptions.dart';
 
-/// Thrown for any authentication/authorization failure. Controllers map
-/// this to an HTTP 401 (bad credentials / no session) or 403 (session ok,
-/// but not permitted) response.
-class AuthException implements Exception {
-  final String message;
-  final int statusCode;
-  AuthException(this.message, {this.statusCode = 401});
-  @override
-  String toString() => message;
+/// Thrown for authentication failures specifically (bad credentials, or no
+/// session for an endpoint that requires one). Maps to HTTP 401. See
+/// [ForbiddenException] in app_exceptions.dart for "authenticated but not
+/// permitted".
+class AuthException extends AppException {
+  AuthException(String message) : super(message, 401);
 }
 
 /// A live in-memory session, created on login and looked up on every
